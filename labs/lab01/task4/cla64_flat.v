@@ -13,7 +13,7 @@ module cla64_flat(
 );
 
   wire [63:0] p, g;
-  wire [64:1] c;
+  wire [64:1] c;   // c[1]..c[64] are the 64 carries; think of cin as c[0]
 
   // ---------------------------------------------------------------------
   // Step 1: generate/propagate signals -- WORKED EXAMPLE
@@ -33,8 +33,33 @@ module cla64_flat(
   endgenerate
 
   // ---------------------------------------------------------------------
-  // Step 2: direct carry equations
-  // ---------------------------------------------------------------------
+  // Step 2: the 64 direct carry equations -- YOUR TASK
+  //
+  // Unlike P and G, these are NOT uniform: Ck needs k+1 product terms,
+  // each one literal longer than the last (see Tutorial 3's derivation).
+  // Writing all 64 of these by hand is extremely tedious and error-prone,
+  // and a single generate-for loop cannot produce them directly (both the
+  // number of terms AND the length of each term change with k).
+  //
+  // Instead: use an AI coding assistant to generate these 64 `assign`
+  // statements.
+  //   - Give it your own C1..C4 equations from cla4.v as the exact
+  //     pattern to continue.
+  //   - Ask it to produce assign statements (with #(2) delays, matching
+  //     the rest of this file) for c[1] through c[64] following that
+  //     same pattern.
+  //
+  // YOU are responsible for verifying the result before trusting it --
+  // this is not optional:
+  //   (1) Confirm the generated c[1]..c[4] exactly match your own cla4.v
+  //       equations.
+  //   (2) Pick at least one later equation (e.g. c[10] or c[32]), re-derive
+  //       it yourself by hand from the recursive definition, and confirm
+  //       it matches what was generated.
+  // Do not move on to this task's reflection question until you've done
+  // both checks.
+  //
+  // TODO: paste your verified assign statements for c[1] through c[64] here.
 
   wire [63:0] t1;
   wire [62:0] t2;
@@ -131,18 +156,7 @@ module cla64_flat(
   and #(2) (t5[0], p[4], p[3], p[2], p[1], p[0], cin);
   or  #(2) (c[5], g[4], t1[4], t2[3], t3[2], t4[1], t5[0]);
 
-  // ---------------------------------------------------------------------
-  // The remaining carries follow exactly the same direct pattern:
-  //
-  // c[k] = g[k-1]
-  //      | p[k-1]g[k-2]
-  //      | p[k-1]p[k-2]g[k-3]
-  //      | ...
-  //      | p[k-1]...p[0]cin
-  //
-  // ---------------------------------------------------------------------
-
-  assign #(2) c[6] =
+    assign #(2) c[6] =
       g[5]
     | (p[5] & g[4])
     | (p[5] & p[4] & g[3])
@@ -175,6 +189,8 @@ module cla64_flat(
   // ---------------------------------------------------------------------
   // Step 3: sum bits
   // ---------------------------------------------------------------------
+  // TODO: assign #(2) sum = p ^ {c[63:1], cin};
+
   assign #(2) sum = p ^ {c[63:1], cin};
 
   assign #(2) cout = c[64];
